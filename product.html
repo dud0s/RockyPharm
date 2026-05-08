@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>RockyPharm – товар</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="container">
+        <div class="logo">🏋️‍♂️ RockyPharm</div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Поиск...">
+            <button id="searchBtn">🔍</button>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="cartIcon">
+                🛒 <span id="cartCount" class="cart-count">0</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <div id="productDetail" class="product-detail">
+        <!-- сюда скрипт подставит данные о товаре -->
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-col"><h4>RockyFarm</h4><p>Спортпит с доставкой по России</p></div>
+        <div class="footer-col"><h4>Контакты</h4><ul><li>support@rockyPharm.ru</li><li>+7 (800) 555-35-35</li></ul></div>
+    </div>
+    <div class="footer-bottom">© 2025 RockyPharm</div>
+</footer>
+
+<div id="cartModal" class="cart-modal">
+    <div class="cart-panel">
+        <div class="cart-header"><span>🛒 Корзина</span><button class="close-modal" id="closeCartBtn">&times;</button></div>
+        <div class="cart-items" id="cartItemsList"></div>
+        <div class="cart-total" id="cartTotal">Итого: 0 ₽</div>
+        <button class="btn" id="checkoutBtn">Оформить заказ</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
