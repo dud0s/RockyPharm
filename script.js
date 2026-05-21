@@ -1,4 +1,3 @@
-// ---------- ТОВАРЫ (14 штук, с описанием и составом) ----------
 const products = [
     { id: 1, name: "Whey Gold Standard", category: "protein", price: 3490, unit: "900г", img: "WheyGoldStandard.jpg", description: "Сывороточный протеин высшего качества. Быстро усваивается, идеален после тренировки.", composition: "Концентрат сывороточного протеина, изолят, ароматизатор, эмульгатор." },
     { id: 2, name: "BCAA 2:1:1", category: "amino", price: 1890, unit: "250г", img: "BCAA211.jpg", description: "Аминокислоты с разветвлёнными цепями для защиты мышц от катаболизма.", composition: "Лейцин, изолейцин, валин (2:1:1), подсластитель." },
@@ -16,18 +15,16 @@ const products = [
     { id: 14, name: "Nut Bar", category: "snack", price: 90, unit: "40г", img: "NutBar.jpg", description: "Ореховый батончик с медом. Энергия и белок.", composition: "Арахис, миндаль, мед, сывороточный протеин." }
 ];
 
-// ---------- ПЕРЕМЕННЫЕ состояния ----------
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let currentCategory = 'all';
 let currentSearch = '';
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
-// ---------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----------
 function catName(cat) {
     const map = { protein:'ПРОТЕИНЫ', amino:'АМИНОКИСЛОТЫ', gainer:'ГЕЙНЕРЫ', snack:'СНЭКИ', vitamin:'ВИТАМИНЫ', creatine:'КРЕАТИН' };
     return map[cat] || cat;
 }
 
-// ---------- ОТРИСОВКА ТОВАРОВ НА ГЛАВНОЙ ----------
 function renderProducts() {
     let filtered = products.filter(p => {
         if (currentCategory !== 'all' && p.category !== currentCategory) return false;
@@ -37,25 +34,21 @@ function renderProducts() {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
     if (!filtered.length) {
-        grid.innerHTML = '<div style="text-align:center; grid-column:1/-1;">Нет товаров</div>';
+        grid.innerHTML = '<div style="text-align:center;">Нет товаров</div>';
         return;
     }
     grid.innerHTML = filtered.map(p => `
         <div class="product-card" data-id="${p.id}">
-            <div class="product-img">
-                <img src="${p.img}" alt="${p.name}" onerror="this.src='images/placeholder.jpg'">
-            </div>
+            <div class="product-img"><img src="${p.img}" alt="${p.name}" onerror="this.src='images/placeholder.jpg'"></div>
             <div class="product-info">
                 <div class="product-category">${catName(p.category)}</div>
                 <div class="product-title">${p.name}</div>
                 <div class="product-price">${p.price.toLocaleString()} ₽ <span>/${p.unit}</span></div>
                 <button class="btn add-to-cart">В корзину</button>
-                <a href="product.html?id=${p.id}" class="btn-outline" style="margin-top:0.5rem; display:inline-block;">Подробнее</a>
+                <a href="product.html?id=${p.id}" class="btn-outline" style="margin-top:0.5rem;">Подробнее</a>
             </div>
         </div>
     `).join('');
-    
-    // обработчики кнопок "В корзину"
     document.querySelectorAll('.add-to-cart').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const card = btn.closest('.product-card');
@@ -70,7 +63,6 @@ function renderProducts() {
     });
 }
 
-// ---------- КОРЗИНА ----------
 function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCounter();
@@ -106,7 +98,6 @@ function updateCartUI() {
     });
     container.innerHTML = html;
     totalSpan.innerText = `Итого: ${total} ₽`;
-    
     document.querySelectorAll('.cart-inc').forEach(btn => {
         btn.onclick = () => {
             const id = parseInt(btn.dataset.id);
@@ -132,22 +123,179 @@ function updateCartUI() {
         };
     });
 }
-function checkout() {
-    if (!cart.length) { alert('Корзина пуста'); return; }
-    const total = cart.reduce((s,i) => s + i.price*i.quantity, 0);
-    alert(`Заказ оформлен! Сумма: ${total} ₽. Спасибо за покупку!`);
-    cart = [];
-    saveCart();
-    updateCartUI();
-    document.getElementById('cartModal').classList.remove('active');
+
+function initAuth() {
+    const authModal = document.getElementById('authModal');
+    const loginBtn = document.getElementById('loginHeaderBtn');
+    const closeAuth = document.getElementById('closeAuthBtn');
+    const loginTab = document.querySelector('[data-tab="login"]');
+    const registerTab = document.querySelector('[data-tab="register"]');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const userInfoDiv = document.getElementById('userInfo');
+    const userNameSpan = document.getElementById('userNameDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (!loginBtn) return;
+    const openAuth = () => {
+        if (currentUser) {
+            if (userInfoDiv) userInfoDiv.style.display = 'block';
+            if (loginForm) loginForm.style.display = 'none';
+            if (registerForm) registerForm.style.display = 'none';
+            if (userNameSpan) userNameSpan.innerText = currentUser.name;
+        } else {
+            if (userInfoDiv) userInfoDiv.style.display = 'none';
+            if (loginForm) loginForm.style.display = 'block';
+            if (registerForm) registerForm.style.display = 'none';
+            if (loginTab) loginTab.classList.add('active');
+            if (registerTab) registerTab.classList.remove('active');
+        }
+        authModal.classList.add('active');
+    };
+    loginBtn.onclick = openAuth;
+    if (closeAuth) closeAuth.onclick = () => authModal.classList.remove('active');
+    authModal.onclick = (e) => { if (e.target === authModal) authModal.classList.remove('active'); };
+    if (loginTab && registerTab) {
+        loginTab.onclick = () => {
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+        };
+        registerTab.onclick = () => {
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        };
+    }
+    document.getElementById('loginSubmitBtn').onclick = () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pass = document.getElementById('loginPassword').value.trim();
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const user = users.find(u => u.email === email && u.password === pass);
+        if (user) {
+            currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            authModal.classList.remove('active');
+            location.reload();
+        } else {
+            document.getElementById('loginMessage').innerText = 'Неверный email или пароль';
+        }
+    };
+    document.getElementById('registerSubmitBtn').onclick = () => {
+        const name = document.getElementById('regName').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const pass = document.getElementById('regPassword').value.trim();
+        if (!name || !email || pass.length < 4) {
+            document.getElementById('registerMessage').innerText = 'Заполните все поля (пароль ≥4 символов)';
+            return;
+        }
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        if (users.find(u => u.email === email)) {
+            document.getElementById('registerMessage').innerText = 'Пользователь уже существует';
+            return;
+        }
+        const newUser = { name, email, password: pass };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        currentUser = newUser;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        authModal.classList.remove('active');
+        location.reload();
+    };
+    if (logoutBtn) logoutBtn.onclick = () => {
+        currentUser = null;
+        localStorage.removeItem('currentUser');
+        location.reload();
+    };
 }
 
-// ---------- ИНИЦИАЛИЗАЦИЯ ГЛАВНОЙ СТРАНИЦЫ ----------
+function initPayment() {
+    const paymentModal = document.getElementById('paymentModal');
+    const closePayment = document.getElementById('closePaymentBtn');
+    const payBtn = document.getElementById('payBtn');
+    const cardFields = document.getElementById('cardFields');
+    const cashInfo = document.getElementById('cashInfo');
+    const paymentRadios = document.querySelectorAll('input[name="payment"]');
+    const estimatedDateSpan = document.getElementById('estimatedDate');
+    const addressInput = document.getElementById('deliveryAddress');
+    if (!paymentModal) return;
+    function updateEstimatedDate() {
+        const date = new Date();
+        date.setDate(date.getDate() + 3);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        if (estimatedDateSpan) estimatedDateSpan.innerText = `${day}.${month}.${year}`;
+    }
+    updateEstimatedDate();
+    const observer = new MutationObserver(() => {
+        if (paymentModal.classList.contains('active')) updateEstimatedDate();
+    });
+    observer.observe(paymentModal, { attributes: true, attributeFilter: ['class'] });
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'card') {
+                cardFields.style.display = 'block';
+                cashInfo.style.display = 'none';
+            } else {
+                cardFields.style.display = 'none';
+                cashInfo.style.display = 'block';
+            }
+        });
+    });
+    payBtn.onclick = () => {
+        const address = addressInput ? addressInput.value.trim() : '';
+        if (!address) {
+            document.getElementById('paymentMessage').innerText = 'Укажите адрес доставки';
+            return;
+        }
+        const method = document.querySelector('input[name="payment"]:checked').value;
+        let isValid = true;
+        if (method === 'card') {
+            const cardNum = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const expiry = document.getElementById('cardExpiry').value;
+            const cvv = document.getElementById('cardCvv').value;
+            if (!/^\d{16}$/.test(cardNum)) {
+                document.getElementById('paymentMessage').innerText = 'Номер карты должен содержать 16 цифр';
+                isValid = false;
+            } else if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+                document.getElementById('paymentMessage').innerText = 'Срок действия в формате ММ/ГГ';
+                isValid = false;
+            } else if (!/^\d{3}$/.test(cvv)) {
+                document.getElementById('paymentMessage').innerText = 'CVV должен содержать 3 цифры';
+                isValid = false;
+            }
+        }
+        if (isValid) {
+            const deliveryDate = estimatedDateSpan.innerText;
+            alert(`Заказ оформлен!\nДоставка по адресу: ${address}\nПримерная дата доставки: ${deliveryDate}\nСпасибо за покупку!`);
+            cart = [];
+            saveCart();
+            updateCartUI();
+            paymentModal.classList.remove('active');
+        }
+    };
+    if (closePayment) closePayment.onclick = () => paymentModal.classList.remove('active');
+    paymentModal.onclick = (e) => { if (e.target === paymentModal) paymentModal.classList.remove('active'); };
+}
+
+function checkout() {
+    if (!cart.length) { alert('Корзина пуста'); return; }
+    if (!currentUser) {
+        alert('Для оформления заказа необходимо авторизоваться');
+        document.getElementById('authModal').classList.add('active');
+        return;
+    }
+    document.getElementById('paymentModal').classList.add('active');
+}
+
+// Инициализация главной страницы
 function initMain() {
     renderProducts();
     updateCartUI();
-
-    // Категории (фильтрация)
+    initAuth();
+    initPayment();
     const catLinks = document.querySelectorAll('.category-link');
     catLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -159,77 +307,16 @@ function initMain() {
             renderProducts();
         });
     });
-
-    // Поиск
     const searchBtn = document.getElementById('searchBtn');
     const searchInput = document.getElementById('searchInput');
-    const doSearch = () => {
-        currentSearch = searchInput.value;
-        renderProducts();
-    };
-    searchBtn.addEventListener('click', doSearch);
-    searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') doSearch(); });
-
-    // Модалка корзины
-    const cartIcon = document.getElementById('cartIcon');
-    const cartModal = document.getElementById('cartModal');
-    const closeCart = document.getElementById('closeCartBtn');
-    cartIcon.onclick = () => cartModal.classList.add('active');
-    closeCart.onclick = () => cartModal.classList.remove('active');
-    cartModal.onclick = (e) => { if (e.target === cartModal) cartModal.classList.remove('active'); };
-    document.getElementById('checkoutBtn').onclick = checkout;
-
-    // Кнопка "В каталог" в hero
-    const heroBtn = document.getElementById('heroBtn');
-    if (heroBtn) {
-        heroBtn.onclick = () => document.querySelector('.products-grid')?.scrollIntoView({ behavior: 'smooth' });
+    if (searchBtn && searchInput) {
+        const doSearch = () => {
+            currentSearch = searchInput.value;
+            renderProducts();
+        };
+        searchBtn.addEventListener('click', doSearch);
+        searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') doSearch(); });
     }
-}
-
-// ---------- СТРАНИЦА ТОВАРА (product.html) ----------
-function initProduct() {
-    const params = new URLSearchParams(window.location.search);
-    const id = parseInt(params.get('id'));
-    const product = products.find(p => p.id === id);
-    const container = document.getElementById('productDetail');
-    if (!container) return;
-    if (product) {
-        container.innerHTML = `
-            <div class="product-detail-content">
-                <div class="product-detail-image">
-                    <img src="${product.img}" alt="${product.name}">
-                </div>
-                <div class="product-detail-info">
-                    <h1 class="product-detail-title">${product.name}</h1>
-                    <div class="product-detail-category">${catName(product.category)}</div>
-                    <div class="product-detail-price">${product.price.toLocaleString()} ₽ <span style="font-size:1rem;">/${product.unit}</span></div>
-                    <div class="product-detail-description"><strong>Описание:</strong><br>${product.description}</div>
-                    <div class="product-detail-composition"><strong>Состав:</strong><br>${product.composition}</div>
-                    <button class="btn add-to-cart-detail" data-id="${product.id}" data-name="${product.name}" data-price="${product.price}">В корзину</button>
-                    <br><br>
-                    <a href="catalog.html" class="back-link">← Назад в каталог</a>
-                </div>
-            </div>
-        `;
-        const addBtn = document.querySelector('.add-to-cart-detail');
-        if (addBtn) {
-            addBtn.addEventListener('click', () => {
-                const id = parseInt(addBtn.dataset.id);
-                const name = addBtn.dataset.name;
-                const price = parseInt(addBtn.dataset.price);
-                const existing = cart.find(i => i.id === id);
-                if (existing) existing.quantity++;
-                else cart.push({ id, name, price, quantity: 1 });
-                saveCart();
-                updateCartUI();
-                alert('Товар добавлен в корзину');
-            });
-        }
-    } else {
-        container.innerHTML = '<p>Товар не найден</p><a href="index.html">Вернуться в каталог</a>';
-    }
-    updateCartUI();
-    // Навесить обработчики корзины на этой странице
     const cartIcon = document.getElementById('cartIcon');
     const cartModal = document.getElementById('cartModal');
     const closeCart = document.getElementById('closeCartBtn');
@@ -238,14 +325,64 @@ function initProduct() {
         closeCart.onclick = () => cartModal.classList.remove('active');
         cartModal.onclick = (e) => { if (e.target === cartModal) cartModal.classList.remove('active'); };
     }
-    document.getElementById('checkoutBtn').onclick = checkout;
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (checkoutBtn) checkoutBtn.onclick = checkout;
+    const heroBtn = document.getElementById('heroBtn');
+    if (heroBtn) heroBtn.onclick = () => document.querySelector('.products-grid')?.scrollIntoView({ behavior: 'smooth' });
 }
 
-// ---------- ОПРЕДЕЛЯЕМ, КАКУЮ СТРАНИЦУ ОТКРЫЛИ ----------
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.includes('product.html')) {
-        initProduct();
+// Страница товара
+function initProduct() {
+    const params = new URLSearchParams(window.location.search);
+    const id = parseInt(params.get('id'));
+    const product = products.find(p => p.id === id);
+    const container = document.getElementById('productDetail');
+    if (product) {
+        container.innerHTML = `
+            <div class="product-detail-content">
+                <div class="product-detail-image"><img src="${product.img}" alt="${product.name}"></div>
+                <div class="product-detail-info">
+                    <h1 class="product-detail-title">${product.name}</h1>
+                    <div class="product-detail-category">${catName(product.category)}</div>
+                    <div class="product-detail-price">${product.price.toLocaleString()} ₽ <span>/${product.unit}</span></div>
+                    <div class="product-detail-description"><strong>Описание:</strong><br>${product.description}</div>
+                    <div class="product-detail-composition"><strong>Состав:</strong><br>${product.composition}</div>
+                    <button class="btn add-to-cart-detail" data-id="${product.id}" data-name="${product.name}" data-price="${product.price}">В корзину</button>
+                    <br><br><a href="catalog.html" class="back-link">← Назад в каталог</a>
+                </div>
+            </div>
+        `;
+        const addBtn = document.querySelector('.add-to-cart-detail');
+        if (addBtn) addBtn.addEventListener('click', () => {
+            const id = parseInt(addBtn.dataset.id);
+            const name = addBtn.dataset.name;
+            const price = parseInt(addBtn.dataset.price);
+            const existing = cart.find(i => i.id === id);
+            if (existing) existing.quantity++;
+            else cart.push({ id, name, price, quantity: 1 });
+            saveCart();
+            updateCartUI();
+            alert('Товар добавлен в корзину');
+        });
     } else {
-        initMain();
+        container.innerHTML = '<p>Товар не найден</p><a href="catalog.html">Вернуться</a>';
     }
+    updateCartUI();
+    initAuth();
+    initPayment();
+    const cartIcon = document.getElementById('cartIcon');
+    const cartModal = document.getElementById('cartModal');
+    const closeCart = document.getElementById('closeCartBtn');
+    if (cartIcon && cartModal && closeCart) {
+        cartIcon.onclick = () => cartModal.classList.add('active');
+        closeCart.onclick = () => cartModal.classList.remove('active');
+        cartModal.onclick = (e) => { if (e.target === cartModal) cartModal.classList.remove('active'); };
+    }
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (checkoutBtn) checkoutBtn.onclick = checkout;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('product.html')) initProduct();
+    else initMain();
 });
