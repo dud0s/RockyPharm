@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RockyPharm – товар</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -10,12 +10,13 @@
 
 <header class="header">
     <div class="container">
-        <div class="logo">🏋️‍♂️ RockyPharm</div>
+        <div class="logo">🏋️‍♂️ ROCKYPHARM</div>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Поиск...">
             <button id="searchBtn">🔍</button>
         </div>
         <div class="header-actions">
+            <button class="icon-btn" id="loginHeaderBtn">Войти</button>
             <button class="icon-btn" id="cartIcon">
                 🛒 <span id="cartCount" class="cart-count">0</span>
             </button>
@@ -24,25 +25,41 @@
 </header>
 
 <main class="container">
-    <div id="productDetail" class="product-detail">
-        <!-- сюда скрипт подставит данные о товаре -->
-    </div>
+    <div id="productDetail" class="product-detail"></div>
 </main>
 
 <footer class="footer">
     <div class="container">
-        <div class="footer-col"><h4>RockyFarm</h4><p>Спортпит с доставкой по России</p></div>
-        <div class="footer-col"><h4>Контакты</h4><ul><li>support@rockyPharm.ru</li><li>+7 (800) 555-35-35</li></ul></div>
+        <div class="footer-col"><h4>RockyPharm</h4><p>Спортпит с доставкой по России</p></div>
+        <div class="footer-col"><h4>Контакты</h4><ul><li>support@rockypharm.ru</li><li>+7 (800) 555-35-35</li></ul></div>
     </div>
     <div class="footer-bottom">© 2025 RockyPharm</div>
 </footer>
 
+<!-- Модалки (те же, что в catalog.html) -->
 <div id="cartModal" class="cart-modal">
-    <div class="cart-panel">
-        <div class="cart-header"><span>🛒 Корзина</span><button class="close-modal" id="closeCartBtn">&times;</button></div>
-        <div class="cart-items" id="cartItemsList"></div>
-        <div class="cart-total" id="cartTotal">Итого: 0 ₽</div>
-        <button class="btn" id="checkoutBtn">Оформить заказ</button>
+    <div class="cart-panel"><div class="cart-header"><span>🛒 Корзина</span><button class="close-modal" id="closeCartBtn">&times;</button></div>
+    <div class="cart-items" id="cartItemsList"></div><div class="cart-total" id="cartTotal">Итого: 0 ₽</div>
+    <button class="btn" id="checkoutBtn">Оформить заказ</button></div>
+</div>
+
+<div id="authModal" class="cart-modal">
+    <div class="cart-panel" style="max-width:450px;"><div class="cart-header"><span>Авторизация</span><button class="close-modal" id="closeAuthBtn">&times;</button></div>
+    <div id="authTabs"><button class="auth-tab active" data-tab="login">Вход</button><button class="auth-tab" data-tab="register">Регистрация</button></div>
+    <div id="loginForm" class="auth-form active"><input type="email" id="loginEmail" placeholder="Email" class="auth-input"><input type="password" id="loginPassword" placeholder="Пароль" class="auth-input"><button id="loginSubmitBtn" class="btn">Войти</button><p id="loginMessage" class="auth-message"></p></div>
+    <div id="registerForm" class="auth-form"><input type="text" id="regName" placeholder="Имя" class="auth-input"><input type="email" id="regEmail" placeholder="Email" class="auth-input"><input type="password" id="regPassword" placeholder="Пароль (мин 4 символа)" class="auth-input"><button id="registerSubmitBtn" class="btn">Зарегистрироваться</button><p id="registerMessage" class="auth-message"></p></div>
+    <div id="userInfo" style="display:none;"><p>Вы вошли как <strong id="userNameDisplay"></strong></p><button id="logoutBtn" class="btn-outline">Выйти</button></div>
+    </div>
+</div>
+
+<div id="paymentModal" class="cart-modal">
+    <div class="cart-panel" style="max-width:500px;"><div class="cart-header"><span>Оплата заказа</span><button class="close-modal" id="closePaymentBtn">&times;</button></div>
+    <div id="paymentForm"><div class="payment-method"><label><input type="radio" name="payment" value="card" checked> Банковская карта</label><label><input type="radio" name="payment" value="cash"> Наличные при получении</label></div>
+    <div id="cardFields"><input type="text" id="cardNumber" placeholder="Номер карты (16 цифр)" class="auth-input" maxlength="16"><div style="display:flex; gap:1rem;"><input type="text" id="cardExpiry" placeholder="ММ/ГГ" class="auth-input" style="flex:1;" maxlength="5"><input type="text" id="cardCvv" placeholder="CVV" class="auth-input" style="flex:1;" maxlength="3"></div></div>
+    <div id="cashInfo" style="display:none; background:#1e1e1e; padding:0.8rem; border-radius:1rem; margin:1rem 0;">Оплата наличными при получении заказа.</div>
+    <div class="delivery-block"><input type="text" id="deliveryAddress" placeholder="Адрес доставки (улица, дом, квартира)" class="auth-input" required><div class="delivery-date-info">Примерная дата доставки: <span id="estimatedDate">--.--.----</span></div></div>
+    <button id="payBtn" class="btn" style="width:100%; margin-top:1rem;">Оплатить</button><p id="paymentMessage" class="auth-message"></p>
+    </div>
     </div>
 </div>
 
